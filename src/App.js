@@ -1,10 +1,19 @@
 import React, { useState, useEffect} from 'react';
 import './App.css';
+import logo from './logo.svg';
 import { API, Storage } from 'aws-amplify';
 import '@aws-amplify/ui-react/styles.css';
 import {
   withAuthenticator,
-  Button
+  Button,
+  Card,
+  View,
+  Flex,
+  Heading,
+  Text,
+  TextField,
+  Image,
+  useTheme
 } from '@aws-amplify/ui-react';
 import { listNotes } from './graphql/queries';
 import { createNote as createNoteMutation, deleteNote as deleteNoteMutation } from './graphql/mutations';
@@ -12,6 +21,7 @@ import { createNote as createNoteMutation, deleteNote as deleteNoteMutation } fr
 const initialFormState = { name: '', description: '' }
 
 function App({signOut}) {
+  const { tokens } = useTheme();
   const [notes, setNotes] = useState([]);
   const [formData, setFormData] = useState(initialFormState);
 
@@ -58,39 +68,72 @@ function App({signOut}) {
   }
 
   return (
-    <div className='App'>
-      <h1>My Notes App</h1>
-      <input 
-        onChange={e => setFormData({...formData, 'name': e.target.value})} 
-        placeholder='Note name'
-        value={formData.name}
-      />
-      <input 
-        onChange={e => setFormData({...formData, 'description': e.target.value})}
-        placeholder='Note description'
-        value={formData.description}
-      />
-      <input
-        type='file'
-        onChange={onChange}
-      />
-      <Button onClick={createNote}>Create Note</Button>
+    <View 
+      backgroundColor={tokens.colors.background.secondary}
+      padding={tokens.space.medium}
+      maxWidth="80%"
+      margin="auto"
+    
+    >
+      <Flex
+        direction="row"
+        alignItems="flex-start"
+      >
+        <Heading level={1}>My Notes App</Heading>
+        <Button onClick={signOut} backgroundColor="red" color="white">Sign Out</Button>
+      </Flex>
+      <Card>
+        <Flex
+          direction="row" 
+          alignItems="flex-start"
+        >
+          <TextField
+            onChange={e => setFormData({...formData, 'name': e.target.value})} 
+            placeholder='Note name'
+            value={formData.name}
+            type="text"
+            inputMode="text"
+          />
+          <TextField 
+            onChange={e => setFormData({...formData, 'description': e.target.value})}
+            placeholder='Note description'
+            value={formData.description}
+            type="text"
+            inputMode="text"
+          />
+          <TextField
+            type='file'
+            onChange={onChange}
+            inputMode="text"
+          />
+          <Button onClick={createNote} variation='primary'>Create Note</Button>
+        </Flex>
+      </Card>
       <div style={{marginBottom: 30}}>
         {
           notes.map(note => (
-            <div key={note.id || note.name}>
-              <h2>{note.name}</h2>
-              <p>{note.description}</p>
-              <Button onClick={() => deleteNote(note)}>Delete Note</Button>
-              {
-                note.image && <img src={note.image} style={{width: 400}} alt={note.id} />
-              }
-            </div>
+            <Card key={note.id || note.name}>
+              <Flex
+                direction="row" 
+                alignItems="flex-start"
+              >
+                  {
+                    note.image ? <Image src={note.image} width={200} alt={note.id} /> : <Image src={logo} width={200} alt={note.id} />
+                  }
+                  <Flex
+                    direction="column"
+                    alignItems="flex-start"
+                  >
+                    <Heading level={3}>{note.name}</Heading>
+                    <Text>{note.description}</Text>
+                    <Button onClick={() => deleteNote(note)}>❌</Button>
+                  </Flex>
+                </Flex>
+            </Card>
           ))
         }
       </div>
-      <Button onClick={signOut}>Sign Out</Button>
-    </div>
+    </View>
   )
 }
 
